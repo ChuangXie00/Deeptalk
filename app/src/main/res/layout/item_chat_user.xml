@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- 显示用户（自己）发送的消息，靠右、背景蓝色。 -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:gravity="end"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/textMessageUser"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_user"
+        android:textColor="#FFFFFF"
+        android:padding="10dp"
+        android:textSize="16sp"
+        android:maxWidth="280dp" />
+</LinearLayout>
