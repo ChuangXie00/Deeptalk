@@ -13,6 +13,8 @@ import com.deeptalk.app.model.ChatMessage;
 
 import java.util.List;
 
+
+// RecyclerView的适配器, 控制每一行消息的显示方式（左 or 右）
 public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private static final int VIEW_TYPE_USER = 1;
@@ -31,6 +33,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     @NonNull
     @Override
+    // 根据消息类型加载对应布局文件(user or ai)
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view;
         if (viewType == VIEW_TYPE_USER) {
@@ -45,6 +48,7 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     @Override
+    // 把ChatMessage数据绑定到TextView上
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         ChatMessage message = messageList.get(position);
         if (holder instanceof UserViewHolder) {

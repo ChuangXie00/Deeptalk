@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- layout container -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation = "vertical"
     android:background = "#FFFFFF"
     android:layout_width = "match_parent"
     android:layout_height = "match_parent">
 
-    <!-- Chatting message list-->
+    <!-- the list show Chatting messages -->
     <androidx.recyclerview.widget.RecyclerView
         android:id = '@+id/recyclerViewChat'
         android:layout_width="match_parent"
@@ -21,6 +22,7 @@
         android:orientation = "horizontal"
         android:padding = "8dp">
 
+        <!-- the area texted message by user -->
         <EditText
             android:id="@+id/editTextMessage"
             android:layout_width="0dp"
@@ -30,6 +32,7 @@
             android:background="@drawable/edit_text_bg"
             android:padding="8dp" />
 
+        <!-- click to send messages-->
         <Button
             android:id="@+id/buttonSend"
             android:layout_width="wrap_content"
