@@ -1,6 +1,7 @@
 package com.deeptalk.app.model;
 
 public class ChatMessage {
+
     private String message;
     private boolean isUser;
 

@@ -2,6 +2,7 @@ package com.deeptalk.app.model;
 
 import java.util.List;
 
+// 构建发送给 API 的 JSON 请求体
 public class ChatRequest {
 
     private String model;
