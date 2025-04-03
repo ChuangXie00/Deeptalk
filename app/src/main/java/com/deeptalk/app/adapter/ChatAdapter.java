@@ -6,34 +6,29 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.deeptalk.app.R;
 import com.deeptalk.app.model.ChatMessage;
 
-import java.util.List;
-
-
-// RecyclerView的适配器, 控制每一行消息的显示方式（左 or 右）
-public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class ChatAdapter extends ListAdapter<ChatMessage, RecyclerView.ViewHolder> {
 
     private static final int VIEW_TYPE_USER = 1;
     private static final int VIEW_TYPE_AI = 2;
 
-    private List<ChatMessage> messageList;
-
-    public ChatAdapter(List<ChatMessage> messageList) {
-        this.messageList = messageList;
+    public ChatAdapter() {
+        super(DIFF_CALLBACK);
     }
 
     @Override
     public int getItemViewType(int position) {
-        return messageList.get(position).isUser() ? VIEW_TYPE_USER : VIEW_TYPE_AI;
+        return getItem(position).isUser() ? VIEW_TYPE_USER : VIEW_TYPE_AI;
     }
 
     @NonNull
     @Override
-    // 根据消息类型加载对应布局文件(user or ai)
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view;
         if (viewType == VIEW_TYPE_USER) {
@@ -48,19 +43,13 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     @Override
-    // 把ChatMessage数据绑定到TextView上
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        ChatMessage message = messageList.get(position);
+        ChatMessage message = getItem(position);
         if (holder instanceof UserViewHolder) {
             ((UserViewHolder) holder).textMessage.setText(message.getMessage());
         } else if (holder instanceof AIViewHolder) {
             ((AIViewHolder) holder).textMessage.setText(message.getMessage());
         }
-    }
-
-    @Override
-    public int getItemCount() {
-        return messageList.size();
     }
 
     static class UserViewHolder extends RecyclerView.ViewHolder {
@@ -80,4 +69,19 @@ public class ChatAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             textMessage = itemView.findViewById(R.id.textMessageAI);
         }
     }
+
+    private static final DiffUtil.ItemCallback<ChatMessage> DIFF_CALLBACK =
+            new DiffUtil.ItemCallback<ChatMessage>() {
+                @Override
+                public boolean areItemsTheSame(@NonNull ChatMessage oldItem, @NonNull ChatMessage newItem) {
+                    // 如果你有唯一 ID，可以比较 ID
+                    return oldItem == newItem;
+                }
+
+                @Override
+                public boolean areContentsTheSame(@NonNull ChatMessage oldItem, @NonNull ChatMessage newItem) {
+                    return oldItem.getMessage().equals(newItem.getMessage()) &&
+                            oldItem.isUser() == newItem.isUser();
+                }
+            };
 }
