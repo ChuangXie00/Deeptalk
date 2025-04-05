@@ -10,36 +10,56 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import java.io.IOException;
 
 public class ApiClient {
-    private static Retrofit retrofit = null;
 
-    // ⚠️ 替换成你自己的 API Key
-    private static final String API_KEY = "sk-65b8584834a04d878285b4a39b49f576";  // ←←← 在这里替换你的 key
+    // config of DeepSeek
+    private static final String DEEPSEEK_BASE_URL = "https://api.deepseek.com/";
+    private static final String DEEPSEEK_API_KEY = "";
+    public static Retrofit deepSeekRetrofit = null;
 
-    // 获得retrofit的 单例对象
-    public static ApiService getApiService() {
-        if (retrofit == null) {
-            // 创建 OkHttpClient，添加拦截器以加入 Header
-            OkHttpClient client = new OkHttpClient.Builder()
-                    .addInterceptor(new Interceptor() {
-                        @Override
-                        public Response intercept(Chain chain) throws IOException {
-                            Request original = chain.request();
-                            Request request = original.newBuilder()
-                                    .header("Authorization", "Bearer " + API_KEY)
-                                    .method(original.method(), original.body())
-                                    .build();
-                            return chain.proceed(request);
-                        }
-                    })
-                    .build();
+    // config of OpenAI
+    private static final String OPENAI_BASE_URL = "https://api.openai.com/";
+    private static final String OPENAI_API_KEY = "";
+    public static Retrofit openAIRetrofit = null;
 
-            retrofit = new Retrofit.Builder()
-                    .baseUrl("https://api.deepseek.com/") // ✅ DeepSeek API 域名
+    // 创建DeepSeek的Retrofit 实例
+    public static ApiService getDeepSeekApiService() {
+        if (deepSeekRetrofit == null) {
+            OkHttpClient client = createClient(DEEPSEEK_API_KEY);
+            deepSeekRetrofit = new Retrofit.Builder()
+                    .baseUrl(DEEPSEEK_BASE_URL)
                     .client(client)
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
         }
+        return deepSeekRetrofit.create(ApiService.class);
+    }
 
-        return retrofit.create(ApiService.class);
+    // OpenAI的Retrofit 实例
+    public static ApiService getOpenAIApiService() {
+        if (openAIRetrofit == null) {
+            OkHttpClient client = createClient(OPENAI_API_KEY);
+            openAIRetrofit = new Retrofit.Builder()
+                    .baseUrl(OPENAI_BASE_URL)
+                    .client(client)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+        }
+        return openAIRetrofit.create(ApiService.class);
+    }
+
+    // 通用Header拦截器的生成方法
+    private static OkHttpClient createClient(String apiKey) {
+        return new OkHttpClient.Builder()
+                .addInterceptor(new Interceptor() {
+                    @Override
+                    public Response intercept(Chain chain) throws IOException {
+                        Request original = chain.request();
+                        Request request = original.newBuilder()
+                                .header("Authorization", "Bearer " + apiKey)
+                                .method(original.method(), original.body())
+                                .build();
+                        return chain.proceed(request);
+                    }
+                }).build();
     }
 }

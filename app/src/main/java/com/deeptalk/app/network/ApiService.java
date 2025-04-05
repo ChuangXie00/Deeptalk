@@ -16,5 +16,9 @@ public interface ApiService {
 
     // 向 DeepSeek API 发送 POST 请求
     @POST("v1/chat/completions")
-    Call<ChatResponse> sendPrompt(@Body ChatRequest request);
+    Call<ChatResponse> sendDeepSeekPrompt(@Body ChatRequest request);
+
+    // 向 GPT API 发送 POST
+    @POST("https://api.openai.com/v1/chat/completions")
+    Call<ChatResponse> sendOpenAIPrompt(@Body ChatRequest request);
 }

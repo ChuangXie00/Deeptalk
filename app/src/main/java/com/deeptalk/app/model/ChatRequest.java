@@ -14,12 +14,18 @@ public class ChatRequest {
         this.messages = messages;
     }
 
-    // 静态工厂方法，用于ViewModel中的快速狗仔请求
+    // 静态工厂方法，用于ViewModel中的快速构造请求
     public static ChatRequest fromUserText(String userText) {
+        return fromUserText(userText,"deepseek-chat");
+    }
+
+    // 重载的新静态方法
+    public static ChatRequest fromUserText(String userText, String modelName) {
         List<Message> messageList = new ArrayList<>();
+
         messageList.add(new Message("user", userText));
 
-        return new ChatRequest("deepseek-chat", messageList);
+        return new ChatRequest(modelName, messageList);
     }
 
     public String getModel() {
@@ -35,6 +41,14 @@ public class ChatRequest {
         public Message(String role, String content) {
             this.role = role;
             this.content = content;
+        }
+
+        public String getRole(){
+            return role;
+        }
+
+        public String getContent(){
+            return content;
         }
     }
 }

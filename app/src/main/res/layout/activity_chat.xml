@@ -22,6 +22,13 @@
         android:orientation = "horizontal"
         android:padding = "8dp">
 
+        <!-- spinner to selecting model type -->
+        <Spinner
+            android:id = "@+id/spinner_api"
+            android:layout_width = "wrap_content"
+            android:layout_height = "wrap_content"
+            android:layout_marginEnd = "8dp"/>
+
         <!-- the area texted message by user -->
         <EditText
             android:id="@+id/editTextMessage"

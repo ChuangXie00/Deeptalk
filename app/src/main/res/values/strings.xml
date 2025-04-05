@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">DeepTalk</string>
+    <string-array name="api_type_list">
+        <item>DeepSeek</item>
+        <item>ChatGPT</item>
+    </string-array>>
 </resources>
