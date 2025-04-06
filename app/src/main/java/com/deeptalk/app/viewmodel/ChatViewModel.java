@@ -12,6 +12,8 @@ import com.deeptalk.app.model.ChatResponse;
 import com.deeptalk.app.network.ApiClient;
 import com.deeptalk.app.network.ApiService;
 import com.deeptalk.app.repository.ChatRepository;
+import com.deeptalk.app.storage.ChatDao;
+import com.deeptalk.app.storage.ChatMessageEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,14 +33,25 @@ public class ChatViewModel extends ViewModel {
     // 数据访问层
     private final ChatRepository repository;
 
-    public ChatViewModel() {
+    public ChatViewModel(ChatDao dao) {
         // 初始化 Repository，注入 Retrofit 接口
-        this.repository = new ChatRepository(ApiClient.getDeepSeekApiService());
+        this.repository = new ChatRepository(ApiClient.getDeepSeekApiService(), dao);
     }
 
     // 暴露LiveData，供Activity/Fragment观察数据变化
     public LiveData<List<ChatMessage>> getMessages() {
         return messages;
+    }
+
+    // 从Room DB加载历史记录
+    public void loadHistory() {
+        repository.getAllMessages(entityList -> {
+            List<ChatMessage> history = new ArrayList<>();
+            for (ChatMessageEntity entity : entityList) {
+                history.add(new ChatMessage(entity.content, entity.isUser));
+            }
+            messages.postValue(history);
+        });
     }
 
     // 处理用户发消息，先加入用户输入
@@ -61,9 +74,13 @@ public class ChatViewModel extends ViewModel {
         currentList.add(userMessage);
         messages.setValue(currentList);
 
-        // ✅ 根据类型选择模型名
-        String modelName = (type == ChatRepository.ApiType.OPENAI) ? "gpt-3.5-turbo" : "deepseek-chat";
+        // 保存用户消息到数据库
+        ChatMessageEntity userEntity = new ChatMessageEntity(
+                userText, true, System.currentTimeMillis(), type.name());
+        repository.saveMessage(userEntity);
 
+        // 根据类型选择模型名
+        String modelName = (type == ChatRepository.ApiType.OPENAI) ? "gpt-3.5-turbo" : "deepseek-chat";
         // 构造 API 请求体
         ChatRequest request = ChatRequest.fromUserText(userText, modelName);
 
@@ -71,31 +88,40 @@ public class ChatViewModel extends ViewModel {
         repository.sendMessage(request, type, new Callback<ChatResponse>() {
             @Override
             public void onResponse(Call<ChatResponse> call, Response<ChatResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    // 构造 AI 回复消息
-                    String reply = "No response";
-                    if (response.body().getChoices() != null
-                            && !response.body().getChoices().isEmpty()) {
-                        reply = response.body().getChoices().get(0).getMessage().getContent();
-                    }
-
-                    ChatMessage aiMessage = new ChatMessage(reply, false);
-                    currentList.add(aiMessage);
-                    messages.postValue(currentList);  // 刷新 UI
+                // 构造AI回复消息
+                String reply = "No response";
+                if (response.isSuccessful() && response.body() != null
+                        && response.body().getChoices() != null
+                        && !response.body().getChoices().isEmpty()) {
+                    reply = response.body().getChoices().get(0).getMessage().getContent();
                 } else {
-                    // 错误响应处理
-                    ChatMessage errorMsg = new ChatMessage("AI response error", false);
-                    currentList.add(errorMsg);
-                    messages.postValue(currentList);
+                    reply = "AI response error";    // 错误响应
                 }
+
+                ChatMessage aiMessage = new ChatMessage(reply, false);
+                currentList.add(aiMessage);
+                messages.postValue(currentList);    // 刷新 UI
+
+                // 保存AI回复到数据库
+                ChatMessageEntity aiEntity = new ChatMessageEntity(
+                        reply, false, System.currentTimeMillis(), type.name()
+                );
+                repository.saveMessage(aiEntity);
             }
 
             @Override
             public void onFailure(Call<ChatResponse> call, Throwable t) {
                 // 网络请求失败
-                ChatMessage errorMsg = new ChatMessage("Network error: " + t.getMessage(), false);
+                String error = "Network error: " + t.getMessage();
+                ChatMessage errorMsg = new ChatMessage(error, false);
                 currentList.add(errorMsg);
                 messages.postValue(currentList);
+
+                // 错误也可以存储（可选）
+                ChatMessageEntity errorEntity = new ChatMessageEntity(
+                        error, false, System.currentTimeMillis(), type.name()
+                );
+                repository.saveMessage(errorEntity);
             }
         });
     }

@@ -18,8 +18,11 @@ import com.deeptalk.app.R;
 import com.deeptalk.app.adapter.ChatAdapter;
 import com.deeptalk.app.model.ChatMessage;
 import com.deeptalk.app.repository.ChatRepository;
+import com.deeptalk.app.storage.ChatDao;
 import com.deeptalk.app.viewmodel.ChatViewModel;
+import com.deeptalk.app.MainApplication;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ChatActivity extends AppCompatActivity {
@@ -45,8 +48,9 @@ public class ChatActivity extends AppCompatActivity {
         buttonSend = findViewById(R.id.buttonSend);
         spinnerApi = findViewById(R.id.spinner_api);
 
-        // 初始化 ViewModel（由 Android 自动管理生命周期）
-        chatViewModel = new ViewModelProvider(this).get(ChatViewModel.class);
+        // 手动创建ViewModel, 传入ChatDAO
+        ChatDao dao = MainApplication.chatDatabase.chatDao();
+        chatViewModel = new ChatViewModel(dao);
 
         // 初始化适配器（先传空列表）
         chatAdapter = new ChatAdapter();
@@ -66,11 +70,9 @@ public class ChatActivity extends AppCompatActivity {
         spinnerApi.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (position == 0) {
-                    selectedApiType = ChatRepository.ApiType.DEEPSEEK;
-                } else {
-                    selectedApiType = ChatRepository.ApiType.OPENAI;
-                }
+                selectedApiType = (position == 0)
+                        ? ChatRepository.ApiType.DEEPSEEK
+                        : ChatRepository.ApiType.OPENAI;
             }
 
             @Override
@@ -78,7 +80,6 @@ public class ChatActivity extends AppCompatActivity {
                 // 默认使用 DeepSeek
                 selectedApiType = ChatRepository.ApiType.DEEPSEEK;
             }
-
         });
 
 
@@ -86,10 +87,13 @@ public class ChatActivity extends AppCompatActivity {
         chatViewModel.getMessages().observe(this, new Observer<List<ChatMessage>>() {
             @Override
             public void onChanged(List<ChatMessage> updatedMessages) {
-                chatAdapter.submitList(updatedMessages); // 替换旧数据
+                chatAdapter.submitList(new ArrayList<>(updatedMessages)); // 创建副本替换旧数据, 防止diff错乱
                 recyclerView.scrollToPosition(updatedMessages.size() - 1); // 滚动到底部
             }
         });
+
+        // init loading history messages
+        chatViewModel.loadHistory();
 
         // 发送按钮监听，调用 ViewModel 处理发送逻辑
         buttonSend.setOnClickListener(new View.OnClickListener() {

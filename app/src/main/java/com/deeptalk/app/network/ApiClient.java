@@ -6,6 +6,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import java.util.concurrent.TimeUnit;
 
 import java.io.IOException;
 
@@ -50,6 +51,9 @@ public class ApiClient {
     // 通用Header拦截器的生成方法
     private static OkHttpClient createClient(String apiKey) {
         return new OkHttpClient.Builder()
+                .connectTimeout(20, TimeUnit.SECONDS) // 增加连接超时时间 10 -> 20
+                .readTimeout(20, TimeUnit.SECONDS)
+                .writeTimeout(20, TimeUnit.SECONDS)
                 .addInterceptor(new Interceptor() {
                     @Override
                     public Response intercept(Chain chain) throws IOException {
