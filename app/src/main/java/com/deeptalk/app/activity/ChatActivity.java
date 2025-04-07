@@ -2,11 +2,15 @@ package com.deeptalk.app.activity;
 
 import android.os.Bundle;
 import android.view.View;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.content.Intent;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.ArrayAdapter;
 import android.widget.AdapterView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
@@ -50,7 +54,7 @@ public class ChatActivity extends AppCompatActivity {
 
         // 手动创建ViewModel, 传入ChatDAO
         ChatDao dao = MainApplication.chatDatabase.chatDao();
-        chatViewModel = new ChatViewModel(dao);
+        chatViewModel = new ChatViewModel(getApplicationContext(), dao);
 
         // 初始化适配器（先传空列表）
         chatAdapter = new ChatAdapter();
@@ -106,5 +110,34 @@ public class ChatActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_chat, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_settings) {
+            // 跳转到SettingsActivity
+            Intent intent = new Intent(this, SettingActivity.class);
+            startActivityForResult(intent, 1001);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 1001 && resultCode == RESULT_OK) {
+            boolean keyUpdated = data != null && data.getBooleanExtra("key_updated", false);
+            if (keyUpdated) {
+                Toast.makeText(this, "API Key updated, it will take effect in later requests", Toast.LENGTH_SHORT).show();
+                // 可刷新ViewModel / Repository等
+            }
+        }
     }
 }

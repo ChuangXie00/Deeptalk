@@ -2,6 +2,8 @@
 
 package com.deeptalk.app.viewmodel;
 
+import android.content.Context;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -33,9 +35,9 @@ public class ChatViewModel extends ViewModel {
     // 数据访问层
     private final ChatRepository repository;
 
-    public ChatViewModel(ChatDao dao) {
+    public ChatViewModel(Context context, ChatDao dao) {
         // 初始化 Repository，注入 Retrofit 接口
-        this.repository = new ChatRepository(ApiClient.getDeepSeekApiService(), dao);
+        this.repository = new ChatRepository(context, ApiClient.getDeepSeekApiService(context), dao);
     }
 
     // 暴露LiveData，供Activity/Fragment观察数据变化

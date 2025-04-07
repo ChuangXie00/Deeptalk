@@ -1,6 +1,8 @@
 // ChatRepository.java
 package com.deeptalk.app.repository;
 
+import android.content.Context;
+
 import com.deeptalk.app.model.ChatMessage;
 import com.deeptalk.app.model.ChatRequest;
 import com.deeptalk.app.model.ChatResponse;
@@ -24,9 +26,11 @@ public class ChatRepository {
 
     private final ApiService defaultApiService;
 
+    private final Context context;
     private final ChatDao chatDao;
 
-    public ChatRepository(ApiService apiService, ChatDao chatDao) {
+    public ChatRepository(Context context, ApiService apiService, ChatDao chatDao) {
+        this.context = context;
         this.defaultApiService = apiService;
         this.chatDao = chatDao;
     }
@@ -44,7 +48,7 @@ public class ChatRepository {
             selectedService = ApiClient.getOpenAIApiService();
             selectedService.sendOpenAIPrompt(request).enqueue(callback);
         } else if (type == ApiType.DEEPSEEK) {
-            selectedService = ApiClient.getDeepSeekApiService();
+            selectedService = ApiClient.getDeepSeekApiService(context);
             selectedService.sendDeepSeekPrompt(request).enqueue(callback);
         }
     }
